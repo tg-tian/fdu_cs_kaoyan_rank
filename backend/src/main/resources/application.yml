@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: kaoyan-rank-backend
+  
+  # Default Database Configuration: H2 (In-memory)
+  # This allows the application to start without an external database.
+  datasource:
+    url: jdbc:h2:mem:kaoyan_rank_db
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  
+  # MySQL Configuration (Uncomment to use)
+  # datasource:
+  #   url: jdbc:mysql://localhost:3306/kaoyan_rank?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+  #   username: root
+  #   password: your_password
+  #   driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    # database-platform: org.hibernate.dialect.MySQLDialect # For MySQL
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
