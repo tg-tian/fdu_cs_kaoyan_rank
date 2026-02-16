@@ -1,0 +1,57 @@
+# General
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+*~
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.sublime-workspace
+*.sublime-project
+
+# Java / Maven (Backend)
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Spring Boot
+.spring-boot-devtools.properties
+
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+coverage/
+*.local
+.npm
+.yarn
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
