@@ -21,4 +21,10 @@ public class RedisConstants {
      * Token 过期时间（小时）
      */
     public static final long TOKEN_EXPIRE_HOURS = 24;
+
+    public static final String SCORE_SERVICE_RATE_LIMIT_KEY = "score:rate:limiter";
+
+    public static final long SCORE_SERVICE_RATE_LIMIT_PERMITS = 10;
+
+    public static final long SCORE_SERVICE_RATE_LIMIT_INTERVAL_SECONDS = 1;
 }

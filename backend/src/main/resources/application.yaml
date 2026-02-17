@@ -2,6 +2,9 @@ server:
   port: 6666
 
 spring:
+  threads:
+    virtual:
+      enabled: true
   application:
     name: kaoyan-rank-backend
   datasource:

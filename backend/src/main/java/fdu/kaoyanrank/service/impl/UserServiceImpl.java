@@ -16,6 +16,10 @@ import fdu.kaoyanrank.utils.HmacUtil;
 import fdu.kaoyanrank.utils.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.redisson.api.RRateLimiter;
+import org.redisson.api.RateIntervalUnit;
+import org.redisson.api.RateType;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +41,8 @@ public class UserServiceImpl implements UserService {
     private RedisUtil redisUtil;
     @Autowired
     private HmacUtil hmacUtil;
+    @Autowired
+    private RedissonClient redissonClient;
 
     @GrpcClient("scoreService")
     private ScoreServiceGrpc.ScoreServiceBlockingStub scoreServiceStub;
@@ -70,6 +76,16 @@ public class UserServiceImpl implements UserService {
             // 用户不存在，首次登录，调用远程 gRPC 服务查询成绩
             GetScoreResponse response = null;
             try {
+                RRateLimiter rateLimiter = redissonClient.getRateLimiter(RedisConstants.SCORE_SERVICE_RATE_LIMIT_KEY);
+                rateLimiter.trySetRate(
+                        RateType.OVERALL,
+                        RedisConstants.SCORE_SERVICE_RATE_LIMIT_PERMITS,
+                        RedisConstants.SCORE_SERVICE_RATE_LIMIT_INTERVAL_SECONDS,
+                        RateIntervalUnit.SECONDS
+                );
+                if (!rateLimiter.tryAcquire(1)) {
+                    throw new ServiceException(429, "请求过于频繁，请稍后再试");
+                }
                 GetScoreRequest request = GetScoreRequest.newBuilder()
                         .setExamNo(userDto.getExamNo())
                         .setIdCard(userDto.getIdCard())
