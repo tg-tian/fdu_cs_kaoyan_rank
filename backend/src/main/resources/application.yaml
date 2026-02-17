@@ -1,0 +1,26 @@
+server:
+  port: 6666
+
+spring:
+  application:
+    name: kaoyan-rank-backend
+  datasource:
+    url: jdbc:mysql://8.153.15.232:3306/kaoyan_rank?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: tg852963
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: 8.153.15.232
+      port: 6379
+      database: 1
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: fdu.kaoyanrank.entity
+  configuration:
+    map-underscore-to-camel-case: true
+
+app:
+  hmac:
+    secret: fdu_cs_kaoyan_rank
