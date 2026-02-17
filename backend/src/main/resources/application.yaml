@@ -24,3 +24,12 @@ mybatis:
 app:
   hmac:
     secret: fdu_cs_kaoyan_rank
+
+grpc:
+  client:
+    scoreService:
+      address: static://10.0.0.1:9090,10.0.0.2:9090
+      negotiation-type: plaintext
+      default-load-balancing-policy: round_robin
+      keep-alive-time: 30s
+      keep-alive-timeout: 10s

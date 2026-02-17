@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package fdu.kaoyanrank.grpc;
+
+option java_multiple_files = true;
+option java_package = "fdu.kaoyanrank.grpc";
+option java_outer_classname = "ScoreProto";
+
+service ScoreService {
+  rpc GetScore (GetScoreRequest) returns (GetScoreResponse) {}
+}
+
+message GetScoreRequest {
+  string examNo = 1;
+  string idCard = 2;
+}
+
+message GetScoreResponse {
+  bool success = 1;
+  map<string, int32> totalScore = 2;
+  string message = 3;
+}

@@ -37,8 +37,8 @@ class UserServiceImplTest {
     void testLogin_UserExists_Success() {
         UserDto userDto = new UserDto();
         final String TEST_IP = "127.0.0.1";
-        userDto.setExamNo("102461234567890");
-        userDto.setIdCard("310110200001011234");
+        userDto.setExamNo("102461234567897");
+        userDto.setIdCard("310110200001011334");
         ThreadLocal<String> threadLocal = new ThreadLocal();
         threadLocal.set(TEST_IP);
         String token = userService.login(userDto);

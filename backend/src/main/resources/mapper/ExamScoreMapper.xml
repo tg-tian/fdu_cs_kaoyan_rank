@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="fdu.kaoyanrank.mapper.ExamScoreMapper">
+
+    <insert id="insert" parameterType="fdu.kaoyanrank.entity.ExamScore" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO exam_score (exam_no_hash, english_score, politics_score, math_score, score_408)
+        VALUES (#{examNoHash}, #{englishScore}, #{politicsScore}, #{mathScore}, #{score408})
+    </insert>
+
+</mapper>
