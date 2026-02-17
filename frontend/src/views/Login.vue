@@ -7,10 +7,6 @@
         </div>
         
         <div class="form-content">
-          <div class="header-area">
-            <h2 class="sub-title">复旦CS考研录分网站</h2>
-          </div>
-
           <el-form
             ref="loginFormRef"
             :model="loginForm"
@@ -60,13 +56,10 @@
               </el-button>
             </el-form-item>
           </el-form>
-          
-          <div class="tips">
-            <p>首次登录查询过程可能较慢，请耐心等待。</p>
-          </div>
         </div>
       </el-card>
     </div>
+    <ReadNoticeDialog v-model="noticeVisible" />
   </div>
 </template>
 
@@ -75,44 +68,54 @@ import { reactive, ref } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
-import { loginAndGetScore } from '../api/user'
+import { loginAndGetToken } from '../api/user'
+import ReadNoticeDialog from '../components/ReadNoticeDialog.vue'
 
 const loginFormRef = ref<FormInstance>()
 const loading = ref(false)
+const noticeVisible = ref(true)
 
 const loginForm = reactive({
   candidateNumber: '',
   idNumber: ''
 })
 
+const normalizeValue = (value: unknown) => String(value ?? '').trim()
+
 const validateCandidateNumber = (rule: any, value: any, callback: any) => {
-  if (value === '') {
+  void rule
+  const normalized = normalizeValue(value)
+  if (!normalized) {
     callback(new Error('请输入考生编号'))
-  } else if (!/^\d{15}$/.test(value)) {
-    callback(new Error('考生编号通常为15位数字'))
-  } else {
-    callback()
+    return
   }
+  if (!/^\d{15}$/.test(normalized)) {
+    callback(new Error('考生编号通常为15位数字'))
+    return
+  }
+  callback()
 }
 
 const validateIdNumber = (rule: any, value: any, callback: any) => {
-  if (value === '') {
+  void rule
+  const normalized = normalizeValue(value).toUpperCase()
+  if (!normalized) {
     callback(new Error('请输入证件号码'))
-  } else if (!/(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/.test(value)) {
-    callback(new Error('请输入正确的身份证号码'))
-  } else {
-    callback()
+    return
   }
+  if (!/^\d{17}(\d|X)$/.test(normalized)) {
+    callback(new Error('请输入正确的身份证号码'))
+    return
+  }
+  callback()
 }
 
 const rules = reactive<FormRules>({
   candidateNumber: [
-    { validator: validateCandidateNumber, trigger: 'blur' },
-    { required: true, message: '请输入考生编号', trigger: 'blur' }
+    { validator: validateCandidateNumber, trigger: 'blur' }
   ],
   idNumber: [
-    { validator: validateIdNumber, trigger: 'blur' },
-    { required: true, message: '请输入证件号码', trigger: 'blur' }
+    { validator: validateIdNumber, trigger: 'blur' }
   ]
 })
 
@@ -123,15 +126,12 @@ const handleLogin = async (formEl: FormInstance | undefined) => {
     if (valid) {
       loading.value = true
       try {
-        const scoreData = await loginAndGetScore({
-          candidateNumber: loginForm.candidateNumber,
-          idNumber: loginForm.idNumber
+        const token = await loginAndGetToken({
+          examNo: loginForm.candidateNumber,
+          idCard: loginForm.idNumber
         })
-        
-        ElMessage.success('查询成功')
-        console.log('User Score:', scoreData)
-        // 登录成功逻辑
-        
+        localStorage.setItem('token', token)
+        ElMessage.success('登录成功')
       } catch (error: any) {
         ElMessage.error(error.message || '查询失败，请稍后重试')
       } finally {
@@ -153,29 +153,29 @@ const handleLogin = async (formEl: FormInstance | undefined) => {
 .login-container {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   min-height: 100vh;
   width: 100%;
-  background-color: #f5f7fa; /* 干净的浅灰背景 */
+  background-color: #fff;
 }
 
 .login-card-wrapper {
   width: 100%;
-  max-width: 440px;
-  padding: 20px;
+  max-width: 100%;
+  padding: 0;
 }
 
 .login-card {
   border: none;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* 柔和阴影 */
+  border-radius: 0;
+  box-shadow: none;
   overflow: hidden;
   background-color: #fff;
 }
 
 .banner-area {
   position: relative;
-  height: 160px;
+  height: 180px;
   overflow: hidden;
 }
 
@@ -212,7 +212,7 @@ const handleLogin = async (formEl: FormInstance | undefined) => {
 }
 
 .form-content {
-  padding: 30px 40px 40px;
+  padding: 30px 24px;
 }
 
 .header-area {
@@ -223,7 +223,7 @@ const handleLogin = async (formEl: FormInstance | undefined) => {
 .sub-title {
   margin: 0;
   color: #333;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   letter-spacing: 1px;
 }
@@ -271,46 +271,42 @@ const handleLogin = async (formEl: FormInstance | undefined) => {
 
 .footer-info {
   margin-top: 24px;
+  margin-bottom: 30px;
   text-align: center;
   color: #909399;
   font-size: 12px;
 }
 
-@media (max-width: 480px) {
+@media (min-width: 481px) {
   .login-container {
-    background-color: #fff;
-    align-items: flex-start;
+    align-items: center;
+    background-color: #f5f7fa;
   }
 
   .login-card-wrapper {
-    padding: 0;
-    max-width: 100%;
-    width: 100%;
+    max-width: 440px;
+    padding: 20px;
   }
 
   .login-card {
-    box-shadow: none;
-    border-radius: 0;
-  }
-
-  .form-content {
-    padding: 30px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   }
 
   .banner-area {
-    height: 180px; /* 移动端Banner稍微高一点，更有视觉冲击力 */
+    height: 160px;
   }
 
-  .main-title {
-    font-size: 28px;
+  .form-content {
+    padding: 30px 40px 40px;
   }
 
   .sub-title {
-    font-size: 16px;
+    font-size: 18px;
   }
-  
+
   .footer-info {
-    margin-bottom: 30px;
+    margin-bottom: 0;
   }
 }
 </style>
