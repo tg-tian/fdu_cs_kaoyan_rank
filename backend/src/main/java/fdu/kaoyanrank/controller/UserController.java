@@ -1,13 +1,15 @@
 package fdu.kaoyanrank.controller;
 
-import fdu.kaoyanrank.common.Result;
 import fdu.kaoyanrank.dto.UserDto;
 import fdu.kaoyanrank.service.UserService;
+import fdu.kaoyanrank.utils.IpUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 @RequestMapping("/user")
@@ -17,8 +19,10 @@ public class UserController {
     private  UserService userService;
 
     @PostMapping("/login")
-    public Result<String> login(@RequestBody UserDto userDto) {
-        String token = userService.login(userDto);
-        return Result.success(token);
+    public SseEmitter login(@RequestBody UserDto userDto, HttpServletRequest request) {
+        SseEmitter emitter = new SseEmitter(30000L);
+        String ip = new ThreadLocal<String>().get();
+        userService.login(userDto, emitter, ip);
+        return emitter;
     }
 }

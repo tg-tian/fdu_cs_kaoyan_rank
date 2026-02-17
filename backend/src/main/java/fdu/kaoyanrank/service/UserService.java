@@ -1,7 +1,8 @@
 package fdu.kaoyanrank.service;
 
 import fdu.kaoyanrank.dto.UserDto;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public interface UserService {
-    String login(UserDto userDto);
+    void login(UserDto userDto, SseEmitter emitter, String ip);
 }
