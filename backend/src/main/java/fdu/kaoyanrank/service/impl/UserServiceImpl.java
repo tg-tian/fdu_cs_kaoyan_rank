@@ -68,6 +68,7 @@ public class UserServiceImpl implements UserService {
             } else {
                 waitForRateLimit(emitter);
                 GetScoreResponse response = fetchScore(userDto);
+                log.info("远程查询成绩结果: {}", response.getMessage());
                 if (response == null || !response.getSuccess()) {
                     // 远程查询失败，记录 IP 失败次数
                     String k = RedisConstants.REDIS_IP_FAIL_PREFIX + ip;
@@ -161,9 +162,9 @@ public class UserServiceImpl implements UserService {
             Map<String, Integer> scores = response.getTotalScoreMap();
             ExamScore examScore = new ExamScore();
             examScore.setExamNoHash(user.getExamNoHash());
-            examScore.setEnglishScore(scores.get("英语"));
-            examScore.setPoliticsScore(scores.get("政治"));
-            examScore.setMathScore(scores.get("数学"));
+            examScore.setEnglishScore(scores.get("english"));
+            examScore.setPoliticsScore(scores.get("politics"));
+            examScore.setMathScore(scores.get("math"));
             examScore.setScore408(scores.get("408"));
             examScoreMapper.insert(examScore);
         } catch (Exception e) {

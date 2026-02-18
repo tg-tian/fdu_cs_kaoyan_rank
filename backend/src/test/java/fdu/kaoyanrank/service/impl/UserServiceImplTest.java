@@ -17,8 +17,8 @@ class UserServiceImplTest {
     void testLogin_UserExists_Success() {
         UserDto userDto = new UserDto();
         String ip = "127.0.0.1";
-        userDto.setExamNo("102461234567897");
-        userDto.setIdCard("310110200001011334");
+        userDto.setExamNo("123456789012346");
+        userDto.setIdCard("111111111111111112");
         SseEmitter emitter = new SseEmitter(30000L);
         assertDoesNotThrow(() -> userService.login(userDto, emitter, ip));
     }
