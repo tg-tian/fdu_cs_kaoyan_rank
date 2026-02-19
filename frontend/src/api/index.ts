@@ -1,0 +1,23 @@
+import axios from 'axios'
+
+export const apiClient = axios.create()
+
+export interface Result<T> {
+  code: number
+  message: string
+  data: T
+}
+
+export const getToken = () => {
+  const token = localStorage.getItem('token')
+  if (!token) throw new Error('未检测到登录信息')
+  return token
+}
+
+export const resolveResult = <T>(result: Result<T>): T => {
+  if (result.code === 200) {
+    if (result.data !== undefined && result.data !== null) 
+      return result.data
+  }
+  throw new Error(result.message || '请求失败')
+}

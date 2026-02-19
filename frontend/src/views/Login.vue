@@ -55,6 +55,9 @@
                 {{ loading ? '查询中...' : '查询成绩' }}
               </el-button>
             </el-form-item>
+            <div v-if="loading && statusMessage" class="status-message">
+              {{ statusMessage }}
+            </div>
           </el-form>
         </div>
       </el-card>
@@ -69,11 +72,15 @@ import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
 import { loginAndGetToken } from '../api/user'
+import type { LoginUpdate } from '../api/user'
 import ReadNoticeDialog from '../components/ReadNoticeDialog.vue'
+import { useRouter } from 'vue-router'
 
 const loginFormRef = ref<FormInstance>()
 const loading = ref(false)
 const noticeVisible = ref(true)
+const router = useRouter()
+const statusMessage = ref('')
 
 const loginForm = reactive({
   candidateNumber: '',
@@ -125,15 +132,27 @@ const handleLogin = async (formEl: FormInstance | undefined) => {
   await formEl.validate(async (valid, fields) => {
     if (valid) {
       loading.value = true
+      statusMessage.value = '正在建立连接...'
       try {
         const token = await loginAndGetToken({
           examNo: loginForm.candidateNumber,
           idCard: loginForm.idNumber
-        })
+        }, (update: LoginUpdate) => {
+          console.log(update)
+          if (update.type === 'queue') {
+            statusMessage.value = `当前排队人数: ${update.data}`
+          } else if (update.type === 'success') {
+            statusMessage.value = '查询成绩成功，正在跳转...'
+          } else if (update.type === 'error') {
+            statusMessage.value = update.data || '发生错误'
+          }
+        }) 
         localStorage.setItem('token', token)
         ElMessage.success('登录成功')
+        router.push('/home')
       } catch (error: any) {
         ElMessage.error(error.message || '查询失败，请稍后重试')
+        statusMessage.value = ''
       } finally {
         loading.value = false
       }
@@ -260,6 +279,14 @@ const handleLogin = async (formEl: FormInstance | undefined) => {
 .login-button:hover, .login-button:focus {
   background-color: #163d72;
   border-color: #163d72;
+}
+
+.status-message {
+  margin-top: 12px;
+  text-align: center;
+  color: #409EFF;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .tips {
