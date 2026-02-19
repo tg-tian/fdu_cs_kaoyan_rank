@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Component
 public class IpUtil {
 
-    public static Set<String> ipWhitelist;
+    public static Set<String> ipWhitelist = Collections.emptySet();
 
     @Value("${app.ip-whitelist:}")
     private String ipWhitelistRaw;

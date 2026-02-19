@@ -109,6 +109,7 @@ public class UserServiceImpl implements UserService {
         try {
             while (!rateLimiter.tryAcquire(1)) {
                 long queueCount = getQueueCount(queueKey);
+                log.info("当前排队人数: {}", queueCount);
                 emitter.send(SseEmitter.event().name("queue").data(queueCount));
                 try {
                     TimeUnit.SECONDS.sleep(1);

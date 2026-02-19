@@ -29,15 +29,15 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/user/login");
     }
 
-    @Bean(name = "virtualThreadTaskExecutor", destroyMethod = "close")
+    @Bean
     public ExecutorService virtualThreadTaskExecutor() {
-        return Executors.newVirtualThreadPerTaskExecutor();
+        return Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("vt-", 0).factory());
     }
 
     @PostConstruct
     public void initRateLimiter() {
         RRateLimiter rateLimiter = redissonClient.getRateLimiter(RedisConstants.SCORE_SERVICE_RATE_LIMIT_KEY);
-        rateLimiter.trySetRate(
+        rateLimiter.setRate(
                 RateType.OVERALL,
                 RedisConstants.SCORE_SERVICE_RATE_LIMIT_PERMITS,
                 RedisConstants.SCORE_SERVICE_RATE_LIMIT_INTERVAL_SECONDS,

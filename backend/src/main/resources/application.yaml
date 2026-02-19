@@ -27,7 +27,7 @@ mybatis:
 app:
   hmac:
     secret: fdu_cs_kaoyan_rank
-  ip-whitelist: ""
+  ip-whitelist: "127.0.0.1"
 
 grpc:
   client:
