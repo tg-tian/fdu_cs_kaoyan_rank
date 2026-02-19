@@ -13,6 +13,7 @@ import fdu.kaoyanrank.mapper.ExamScoreMapper;
 import fdu.kaoyanrank.mapper.UserMapper;
 import fdu.kaoyanrank.service.UserService;
 import fdu.kaoyanrank.utils.HmacUtil;
+import fdu.kaoyanrank.utils.IpUtil;
 import fdu.kaoyanrank.utils.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
@@ -91,6 +92,9 @@ public class UserServiceImpl implements UserService {
     }
 
     private void ipLimitCheck(String ip) {
+        log.info("登录请求 IP: {}", ip);
+        if(IpUtil.ipWhitelist.contains(ip))
+            return;
         String key = RedisConstants.REDIS_IP_FAIL_PREFIX + ip;
         String countStr = redisUtil.getIfPresent(key);
         if (countStr != null && Integer.parseInt(countStr) >= RedisConstants.MAX_FAIL_COUNT) {

@@ -1,13 +1,38 @@
 package fdu.kaoyanrank.utils;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
+@Component
 public class IpUtil {
+
+    public static Set<String> ipWhitelist;
+
+    @Value("${app.ip-whitelist:}")
+    private String ipWhitelistRaw;
+
+    @PostConstruct
+    public void initWhitelist() {
+        if (!StringUtils.hasText(ipWhitelistRaw)) {
+            return;
+        }
+        ipWhitelist = Arrays.stream(ipWhitelistRaw.split(","))
+                .map(String::trim)
+                .filter(StringUtils::hasText)
+                .collect(Collectors.toSet());
+    }
 
     public static String getIpAddr(HttpServletRequest request) {
         String ipAddress = request.getHeader("x-forwarded-for");
