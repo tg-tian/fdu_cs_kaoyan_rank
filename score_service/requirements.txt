@@ -1,0 +1,9 @@
+grpcio
+protobuf
+requests
+paddleocr
+paddlepaddle
+pillow
+numpy
+python-dotenv
+opencv-python

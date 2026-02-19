@@ -12,6 +12,9 @@ import requests
 from ocr import recognize_captcha
 from dotenv import load_dotenv
 
+# Load environment variables
+load_dotenv()
+
 
 class ScoreService(score_pb2_grpc.ScoreServiceServicer):
 
