@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.redisson.api.RRateLimiter;
 import org.redisson.api.RedissonClient;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -51,7 +52,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Async("virtualThreadTaskExecutor")
-    @Transactional
     public void login(UserDto userDto, SseEmitter emitter, String ip){
         try {
             if (!StringUtils.hasText(userDto.getExamNo()) || !StringUtils.hasText(userDto.getIdCard())) {
@@ -79,7 +79,7 @@ public class UserServiceImpl implements UserService {
                     throw new ServiceException( "验证失败：考生信息不存在或不匹配");
                 }
                 user = buildNewUser(examNoHash, idCardHash);
-                saveUserWithScores(user, response);
+                ((UserServiceImpl) AopContext.currentProxy()).saveUserWithScores(user, response);
             }
             // 生成 Token
             String token = UUID.randomUUID().toString().replace("-", "");
@@ -161,7 +161,8 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
-    private void saveUserWithScores(User user, GetScoreResponse response) {
+    @Transactional
+    public void saveUserWithScores(User user, GetScoreResponse response) {
         try {
             userMapper.insert(user);
             Map<String, Integer> scores = response.getTotalScoreMap();
