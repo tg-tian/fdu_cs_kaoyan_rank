@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
             // 生成 Token
             String token = UUID.randomUUID().toString().replace("-", "");
             redisUtil.set(RedisConstants.REDIS_TOKEN_PREFIX + token, user.getExamNoHash(), RedisConstants.TOKEN_EXPIRE_HOURS, TimeUnit.HOURS);
-            emitter.send(SseEmitter.event().name("loginSuccess").data(token));
+            emitter.send(SseEmitter.event().name("success").data(token));
             emitter.complete();
         }catch (Exception e) {
             emitter.completeWithError(e);

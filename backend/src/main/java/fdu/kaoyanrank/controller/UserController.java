@@ -1,6 +1,7 @@
 package fdu.kaoyanrank.controller;
 
 import fdu.kaoyanrank.dto.UserDto;
+import fdu.kaoyanrank.interceptor.IpInterceptor;
 import fdu.kaoyanrank.service.UserService;
 import fdu.kaoyanrank.utils.IpUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,7 +22,7 @@ public class UserController {
     @PostMapping("/login")
     public SseEmitter login(@RequestBody UserDto userDto, HttpServletRequest request) {
         SseEmitter emitter = new SseEmitter(30000L);
-        String ip = new ThreadLocal<String>().get();
+        String ip = IpInterceptor.getIp();
         userService.login(userDto, emitter, ip);
         return emitter;
     }

@@ -19,7 +19,7 @@ public class IpUtil {
         }
         if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
             ipAddress = request.getRemoteAddr();
-            if ("127.0.0.1".equals(ipAddress) || ipAddress.startsWith("[::1]")) {
+            if ("127.0.0.1".equals(ipAddress) || ipAddress.startsWith("0:0:0:0:0:0:0:1")) {
                 // 根据网卡取本机配置的IP
                 InetAddress inet = null;
                 try {

@@ -12,6 +12,10 @@ public class IpInterceptor implements HandlerInterceptor {
 
     private static final ThreadLocal<String> IP_THREAD_LOCAL = new ThreadLocal<>();
 
+    public static String getIp() {
+        return IP_THREAD_LOCAL.get();
+    }
+
     @Override
     public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) {
         String ip = IpUtil.getIpAddr(request);
