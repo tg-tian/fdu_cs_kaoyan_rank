@@ -21,6 +21,7 @@ import org.redisson.api.RRateLimiter;
 import org.redisson.api.RedissonClient;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +47,8 @@ public class UserServiceImpl implements UserService {
     private HmacUtil hmacUtil;
     @Autowired
     private RedissonClient redissonClient;
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @GrpcClient("scoreService")
     private ScoreServiceGrpc.ScoreServiceBlockingStub scoreServiceStub;
@@ -79,7 +82,8 @@ public class UserServiceImpl implements UserService {
                     throw new ServiceException( "验证失败：考生信息不存在或不匹配");
                 }
                 user = buildNewUser(examNoHash, idCardHash);
-                ((UserServiceImpl) AopContext.currentProxy()).saveUserWithScores(user, response);
+                UserServiceImpl proxy = applicationContext.getBean(UserServiceImpl.class);
+                proxy.saveUserWithScores(user, response);
             }
             // 生成 Token
             String token = UUID.randomUUID().toString().replace("-", "");

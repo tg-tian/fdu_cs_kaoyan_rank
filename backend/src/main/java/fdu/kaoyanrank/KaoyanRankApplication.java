@@ -10,7 +10,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @Slf4j
 @SpringBootApplication
 @EnableAsync
-@EnableAspectJAutoProxy(exposeProxy = true)
 @MapperScan("fdu.kaoyanrank.mapper")
 public class KaoyanRankApplication {
 
