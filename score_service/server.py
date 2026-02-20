@@ -49,14 +49,17 @@ class ScoreService(score_pb2_grpc.ScoreServiceServicer):
 
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    max_workers = int(os.getenv("MAX_WORKERS", "5"))
+    port = int(os.getenv("PORT", "6667"))
+    
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=max_workers))
     score_pb2_grpc.add_ScoreServiceServicer_to_server(
         ScoreService(), server
     )
 
-    server.add_insecure_port('[::]:6667')
+    server.add_insecure_port(f'[::]:{port}')
     server.start()
-    print("gRPC Server started on port 6667...")
+    print(f"gRPC Server started on port {port} with {max_workers} workers...")
     server.wait_for_termination()
 
 
