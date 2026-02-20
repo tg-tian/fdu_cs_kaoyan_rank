@@ -1,5 +1,5 @@
 # Build stage
-FROM node:18-bullseye-slim as build-stage
+FROM node:23-bullseye-slim as build-stage
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
