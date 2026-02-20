@@ -1,10 +1,8 @@
 export interface ScoreItem {
-  candidateNumber: string
-  name: string
-  totalScore: number
-  politics: number
-  english: number
-  math: number
-  professional: number
-  rank?: number
+  id: number
+  examNoHash: string
+  englishScore: number
+  politicsScore: number
+  mathScore: number
+  score408: number
 }
