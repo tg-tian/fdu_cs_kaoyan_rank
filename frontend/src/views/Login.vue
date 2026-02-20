@@ -132,7 +132,7 @@ const handleLogin = async (formEl: FormInstance | undefined) => {
   await formEl.validate(async (valid, fields) => {
     if (valid) {
       loading.value = true
-      statusMessage.value = '正在建立连接...'
+      statusMessage.value = '正在查询成绩...'
       try {
         const token = await loginAndGetToken({
           examNo: loginForm.candidateNumber,
@@ -284,9 +284,9 @@ const handleLogin = async (formEl: FormInstance | undefined) => {
 .status-message {
   margin-top: 12px;
   text-align: center;
-  color: #409EFF;
-  font-size: 14px;
-  font-weight: 500;
+  color: #909399;
+  font-size: 12px;
+  font-weight: normal;
 }
 
 .tips {

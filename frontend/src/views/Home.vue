@@ -92,6 +92,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { getAllScores, getMyScore } from '../api/score'
 import type { ScoreItem } from '../entities/score'
 import { ElMessage } from 'element-plus'
@@ -99,6 +100,7 @@ import ScoreHistogram from '../components/ScoreHistogram.vue'
 import ScoreAnalysis from '../components/ScoreAnalysis.vue'
 import HistoryScoreLines from '../components/HistoryScoreLines.vue'
 
+const router = useRouter()
 const scores = ref<ScoreItem[]>([])
 const myScore = ref<ScoreItem | null>(null)
 const loading = ref(false)
@@ -170,6 +172,13 @@ const totalScore = computed(() => {
 })
 
 onMounted(async () => {
+  const token = localStorage.getItem('token')
+  if (!token) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+
   loading.value = true
   try {
     const [allScores, me] = await Promise.all([
