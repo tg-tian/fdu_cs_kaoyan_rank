@@ -7,4 +7,14 @@
         VALUES (#{examNoHash}, #{englishScore}, #{politicsScore}, #{mathScore}, #{score408})
     </insert>
 
+    <select id="selectAllScores" resultType="fdu.kaoyanrank.entity.ExamScore">
+        SELECT english_score AS englishScore, politics_score AS politicsScore, math_score AS mathScore, score_408 AS score408
+        FROM exam_score
+    </select>
+
+    <select id="selectByExamNoHash" resultType="fdu.kaoyanrank.entity.ExamScore">
+        SELECT id, exam_no_hash AS examNoHash, english_score AS englishScore, politics_score AS politicsScore, math_score AS mathScore, score_408 AS score408
+        FROM exam_score
+        WHERE exam_no_hash = #{examNoHash}
+    </select>
 </mapper>

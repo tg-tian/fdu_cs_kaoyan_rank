@@ -2,6 +2,7 @@ package fdu.kaoyanrank.config;
 
 import fdu.kaoyanrank.constant.RedisConstants;
 import fdu.kaoyanrank.interceptor.IpInterceptor;
+import fdu.kaoyanrank.interceptor.LoginInterceptor;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RRateLimiter;
@@ -21,12 +22,16 @@ import java.util.concurrent.Executors;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     private final IpInterceptor ipInterceptor;
+    private final LoginInterceptor loginInterceptor;
     private final RedissonClient redissonClient;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(ipInterceptor)
                 .addPathPatterns("/user/login");
+
+        registry.addInterceptor(loginInterceptor)
+                .addPathPatterns("/score/**");
     }
 
     @Bean
