@@ -12,6 +12,7 @@ import fdu.kaoyanrank.grpc.ScoreServiceGrpc;
 import fdu.kaoyanrank.mapper.ExamScoreMapper;
 import fdu.kaoyanrank.mapper.UserMapper;
 import fdu.kaoyanrank.service.UserService;
+import fdu.kaoyanrank.service.validator.BusinessValidator;
 import fdu.kaoyanrank.utils.HmacUtil;
 import fdu.kaoyanrank.utils.IpUtil;
 import fdu.kaoyanrank.utils.RedisUtil;
@@ -19,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.redisson.api.RRateLimiter;
 import org.redisson.api.RedissonClient;
-import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
@@ -28,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -49,6 +48,8 @@ public class UserServiceImpl implements UserService {
     private RedissonClient redissonClient;
     @Autowired
     private ApplicationContext applicationContext;
+    @Autowired
+    private BusinessValidator<UserDto> userCredentialBusinessValidator;
 
     @GrpcClient("scoreService")
     private ScoreServiceGrpc.ScoreServiceBlockingStub scoreServiceStub;
@@ -57,9 +58,7 @@ public class UserServiceImpl implements UserService {
     @Async("virtualThreadTaskExecutor")
     public void login(UserDto userDto, SseEmitter emitter, String ip){
         try {
-            if (!StringUtils.hasText(userDto.getExamNo()) || !StringUtils.hasText(userDto.getIdCard())) {
-                throw new ServiceException("考生编号和证件号码不能为空");
-            }
+            userCredentialBusinessValidator.validate(userDto);
             ipLimitCheck(ip);
             // Hash
             String examNoHash = hmacUtil.hmacSha256Hex(userDto.getExamNo());

@@ -3,8 +3,7 @@ package fdu.kaoyanrank.controller;
 import fdu.kaoyanrank.dto.UserDto;
 import fdu.kaoyanrank.interceptor.IpInterceptor;
 import fdu.kaoyanrank.service.UserService;
-import fdu.kaoyanrank.utils.IpUtil;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,7 +19,7 @@ public class UserController {
     private  UserService userService;
 
     @PostMapping("/login")
-    public SseEmitter login(@RequestBody UserDto userDto, HttpServletRequest request) {
+    public SseEmitter login(@Valid @RequestBody UserDto userDto) {
         SseEmitter emitter = new SseEmitter(30000L);
         String ip = IpInterceptor.getIp();
         userService.login(userDto, emitter, ip);
