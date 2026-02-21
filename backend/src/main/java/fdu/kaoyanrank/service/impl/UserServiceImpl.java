@@ -12,7 +12,7 @@ import fdu.kaoyanrank.grpc.ScoreServiceGrpc;
 import fdu.kaoyanrank.mapper.ExamScoreMapper;
 import fdu.kaoyanrank.mapper.UserMapper;
 import fdu.kaoyanrank.service.UserService;
-import fdu.kaoyanrank.service.validator.UserCredentialBusinessValidator;
+import fdu.kaoyanrank.service.validator.BusinessValidator;
 import fdu.kaoyanrank.utils.HmacUtil;
 import fdu.kaoyanrank.utils.IpUtil;
 import fdu.kaoyanrank.utils.RedisUtil;
@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private ApplicationContext applicationContext;
     @Autowired
-    private UserCredentialBusinessValidator userCredentialBusinessValidator;
+    private BusinessValidator<UserDto> userCredentialBusinessValidator;
 
     @GrpcClient("scoreService")
     private ScoreServiceGrpc.ScoreServiceBlockingStub scoreServiceStub;
