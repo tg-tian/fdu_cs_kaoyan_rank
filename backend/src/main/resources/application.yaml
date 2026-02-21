@@ -2,6 +2,8 @@ server:
   port: ${SERVER_PORT:6666}
 
 spring:
+  profiles:
+    active: dev
   threads:
     virtual:
       enabled: true
@@ -10,13 +12,15 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/kaoyan_rank?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
     username: ${SPRING_DATASOURCE_USERNAME:root}
-    password: ${SPRING_DATASOURCE_PASSWORD:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:default}
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
       host: ${SPRING_DATA_REDIS_HOST:127.0.0.1}
       port: ${SPRING_DATA_REDIS_PORT:6379}
-      database: ${SPRING_DATA_REDIS_DATABASE:1}
+      database: ${SPRING_DATA_REDIS_DATABASE:0}
+      username: ${SPRING_DATA_REDIS_USERNAME:default}
+      password: ${SPRING_DATA_REDIS_PASSWORD:default}
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
