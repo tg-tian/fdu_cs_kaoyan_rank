@@ -15,12 +15,15 @@ export const loginAndGetToken = async (
     body: JSON.stringify(data),
   })
 
-  if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(errorText || `登录失败: ${response.status}`)
-  }
-
   if (!response.body) throw new Error('浏览器不支持流式读取')
+
+  const contentType = response.headers.get('content-type')
+  if (contentType && contentType.includes('application/json')) {
+    const data = await response.json()
+    if (data.code !== 200) {
+      throw new Error(data.message || '登录失败')
+    }
+  }
 
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
