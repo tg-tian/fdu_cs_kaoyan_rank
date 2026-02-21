@@ -2,7 +2,6 @@ package fdu.kaoyanrank.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fdu.kaoyanrank.dto.UserDto;
-import fdu.kaoyanrank.exception.ServiceException;
 import fdu.kaoyanrank.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -50,13 +49,11 @@ class UserControllerTest {
     void testLoginValidationFail() throws Exception {
         UserDto userDto = new UserDto();
 
-        doThrow(new ServiceException(400, "考生编号和证件号码不能为空"))
-                .when(userService)
-                .login(any(UserDto.class), any(SseEmitter.class), any(String.class));
-
         mockMvc.perform(post("/user/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userDto)))
-                .andExpect(status().isOk());
+            .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(userService);
     }
 }
