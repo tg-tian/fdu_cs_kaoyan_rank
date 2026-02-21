@@ -24,7 +24,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Result<String>> handleConstraintViolationException(ConstraintViolationException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Result.error(400, e.getMessage()));
+        String message = e.getConstraintViolations().stream()
+                .map(violation -> violation.getMessage())
+                .findFirst()
+                .orElse("请求参数不合法");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Result.error(400, message));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)

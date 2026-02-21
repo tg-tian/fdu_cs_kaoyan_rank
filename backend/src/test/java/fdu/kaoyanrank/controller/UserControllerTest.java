@@ -16,6 +16,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -53,6 +54,51 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userDto)))
             .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(userService);
+    }
+
+    @Test
+    void testLoginValidationFailWhenExamNoWhitespaceOnly() throws Exception {
+        UserDto userDto = new UserDto();
+        userDto.setExamNo("   ");
+        userDto.setIdCard("310110200001011234");
+
+        mockMvc.perform(post("/user/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("考生编号不能为空"));
+
+        verifyNoInteractions(userService);
+    }
+
+    @Test
+    void testLoginValidationFailWhenExamNoTooLong() throws Exception {
+        UserDto userDto = new UserDto();
+        userDto.setExamNo("1".repeat(101));
+        userDto.setIdCard("310110200001011234");
+
+        mockMvc.perform(post("/user/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("考生编号长度必须在1到100之间"));
+
+        verifyNoInteractions(userService);
+    }
+
+    @Test
+    void testLoginValidationFailWhenIdCardTooLong() throws Exception {
+        UserDto userDto = new UserDto();
+        userDto.setExamNo("102461234567890");
+        userDto.setIdCard("1".repeat(101));
+
+        mockMvc.perform(post("/user/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("证件号码长度必须在1到100之间"));
 
         verifyNoInteractions(userService);
     }
