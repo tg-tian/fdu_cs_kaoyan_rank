@@ -11,7 +11,7 @@ jobs:
       frontend-changed: ${{ steps.changes.outputs.frontend }}
       backend-changed: ${{ steps.changes.outputs.backend }}
       score-service-changed: ${{ steps.changes.outputs.score-service }}
-      docker-compose-changed: ${{ steps.changes.outputs.docker-compose }}
+      docker-compose-changed: ${{ steps.changes.outputs.docker_compose }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,7 +30,7 @@ jobs:
             score-service:
               - 'score_service/**'
               - 'proto/**'
-            docker-compose:
+            docker_compose:
               - 'docker-compose.yml'
               - '.github/workflows/**'
 
