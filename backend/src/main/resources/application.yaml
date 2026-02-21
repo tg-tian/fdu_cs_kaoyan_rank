@@ -1,5 +1,5 @@
 server:
-  port: 6666
+  port: ${SERVER_PORT:6666}
 
 spring:
   threads:
@@ -8,15 +8,15 @@ spring:
   application:
     name: kaoyan-rank-backend
   datasource:
-    url: jdbc:mysql://8.153.15.232:3306/kaoyan_rank?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: root
-    password: tg852963
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/kaoyan_rank?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
-      host: 8.153.15.232
-      port: 6379
-      database: 1
+      host: ${SPRING_DATA_REDIS_HOST:127.0.0.1}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      database: ${SPRING_DATA_REDIS_DATABASE:1}
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
@@ -26,13 +26,13 @@ mybatis:
 
 app:
   hmac:
-    secret: fdu_cs_kaoyan_rank
-  ip-whitelist: "127.0.0.1"
+    secret: ${APP_HMAC_SECRET:change_me}
+  ip-whitelist: "${APP_IP_WHITELIST:127.0.0.1}"
 
 grpc:
   client:
     scoreService:
-      address: static://127.0.0.1:6667,127.0.0.1:6667
+      address: ${GRPC_CLIENT_SCORE_SERVICE_ADDRESS:static://127.0.0.1:6667,127.0.0.1:6667}
       negotiation-type: plaintext
       default-load-balancing-policy: round_robin
       keep-alive-time: 30s
