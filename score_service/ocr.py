@@ -27,7 +27,7 @@ MODEL_DIR = os.path.join(os.path.dirname(__file__), "models", "PP-OCRv5_server_r
 import cv2
 
 # Initialize OCR model (Global initialization, runs once on import)
-_OCR = TextRecognition(model_dir=MODEL_DIR, enable_mkldnn=True)
+_OCR = TextRecognition(model_dir=MODEL_DIR, enable_mkldnn=False)
 
 def preprocess_image(image_bytes):
     nparr = np.frombuffer(image_bytes, np.uint8)

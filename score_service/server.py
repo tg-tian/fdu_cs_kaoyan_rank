@@ -11,9 +11,11 @@ import score_pb2_grpc
 import requests
 from ocr import recognize_captcha
 from dotenv import load_dotenv
+from logger import setup_logging
 
 # Load environment variables
 load_dotenv()
+logger = setup_logging()
 
 
 class ScoreService(score_pb2_grpc.ScoreServiceServicer):
@@ -35,10 +37,24 @@ class ScoreService(score_pb2_grpc.ScoreServiceServicer):
         #         message=str(exc)
         #     )
         time.sleep(3)
+
+
+        index_url = os.getenv("INDEX_HTTP", "https://gsas.fudan.edu.cn/sscjcx/index").strip()
+        login_base = os.getenv("LOGIN_HTTP", "https://gsas.fudan.edu.cn").strip()
+        year = os.getenv("FDU_YEAR", "2026")
+        captcha_url = os.getenv("CAPTCHA_HTTP", "https://gsas.fudan.edu.cn/captcha/imageCode").strip()
+        session = requests.Session()
+        headers = _build_headers()
+        index_res = session.get(index_url, headers=headers, timeout=10)
+        index_res.raise_for_status()
+        verify_code = _retry_verify_code(session, captcha_url, headers)
+        if len(verify_code) != 4:
+            raise RuntimeError("验证码识别失败")
+        
         total_score = {
             "math": random.randint(60, 150),
-            "english": random.randint(0, 150),
-            "politics": random.randint(40, 100),
+            "english": random.randint(40, 100),
+            "politics": random.randint(40, 90),
             "408": random.randint(40, 150)
         }
         return score_pb2.GetScoreResponse(
@@ -59,15 +75,15 @@ def serve():
 
     server.add_insecure_port(f'[::]:{port}')
     server.start()
-    print(f"gRPC Server started on port {port} with {max_workers} workers...")
+    logger.info(f"gRPC Server started on port {port} with {max_workers} workers...")
     server.wait_for_termination()
 
 
 def fetch_scores(exam_no, id_card):
-    index_url = os.getenv("INDEX_HTTP", "").strip()
-    login_base = os.getenv("LOGIN_HTTP", "").strip()
-    year = os.getenv("FDU_YEAR", str(datetime.now().year))
-    captcha_url = os.getenv("CAPTCHA_HTTP", "").strip()
+    index_url = os.getenv("INDEX_HTTP", "https://gsas.fudan.edu.cn/sscjcx/index").strip()
+    login_base = os.getenv("LOGIN_HTTP", "https://gsas.fudan.edu.cn").strip()
+    year = os.getenv("FDU_YEAR", "2026")
+    captcha_url = os.getenv("CAPTCHA_HTTP", "https://gsas.fudan.edu.cn/captcha/imageCode").strip()
 
     session = requests.Session()
     headers = _build_headers()
@@ -137,6 +153,7 @@ def _retry_verify_code(session, captcha_url, headers):
         image_res.raise_for_status()
         code = recognize_captcha(image_res.content)
         code = re.sub(r'[^0-9a-zA-Z]', '', code or "")
+        logger.info(f"Recognized captcha: {code}")
         if len(code) == 4:
             return code
         best_code = code
