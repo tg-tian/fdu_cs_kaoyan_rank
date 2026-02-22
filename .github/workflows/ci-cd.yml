@@ -87,8 +87,9 @@ jobs:
             SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}
             SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}
             SPRING_DATA_REDIS_HOST=${{ secrets.SPRING_DATA_REDIS_HOST }}
-            SPRING_DATA_REDIS_PORT=${{ secrets.SPRING_DATA_REDIS_PORT }}
-            SPRING_DATA_REDIS_PASSWORD=${{ secrets.SPRING_DATA_REDIS_PASSWORD }}
+             SPRING_DATA_REDIS_PORT=${{ secrets.SPRING_DATA_REDIS_PORT }}
+             SPRING_DATA_REDIS_USERNAME=${{ secrets.SPRING_DATA_REDIS_USERNAME }}
+             SPRING_DATA_REDIS_PASSWORD=${{ secrets.SPRING_DATA_REDIS_PASSWORD }}
             APP_HMAC_SECRET=${{ secrets.APP_HMAC_SECRET }}
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/kaoyan-rank-backend:latest
