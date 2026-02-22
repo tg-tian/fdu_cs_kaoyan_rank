@@ -82,6 +82,14 @@ jobs:
           context: .
           file: ./backend/Dockerfile
           push: true
+          build-args: |
+            SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}
+            SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}
+            SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+            SPRING_DATA_REDIS_HOST=${{ secrets.SPRING_DATA_REDIS_HOST }}
+            SPRING_DATA_REDIS_PORT=${{ secrets.SPRING_DATA_REDIS_PORT }}
+            SPRING_DATA_REDIS_PASSWORD=${{ secrets.SPRING_DATA_REDIS_PASSWORD }}
+            APP_HMAC_SECRET=${{ secrets.APP_HMAC_SECRET }}
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/kaoyan-rank-backend:latest
             ${{ secrets.DOCKER_USERNAME }}/kaoyan-rank-backend:${{ github.sha }}
@@ -127,37 +135,11 @@ jobs:
     steps:
       - name: Deploy to production
         uses: appleboy/ssh-action@v1.0.3
-        env:
-          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
-          SPRING_DATA_REDIS_HOST: ${{ secrets.SPRING_DATA_REDIS_HOST }}
-          SPRING_DATA_REDIS_PORT: ${{ secrets.SPRING_DATA_REDIS_PORT }}
-          SPRING_DATA_REDIS_DATABASE: ${{ secrets.SPRING_DATA_REDIS_DATABASE }}
-          APP_HMAC_SECRET: ${{ secrets.APP_HMAC_SECRET }}
-          APP_IP_WHITELIST: ${{ secrets.APP_IP_WHITELIST }}
-          GRPC_CLIENT_SCORE_SERVICE_ADDRESS: ${{ secrets.GRPC_CLIENT_SCORE_SERVICE_ADDRESS }}
         with:
           host: ${{ secrets.PROD_HOST }}
           username: ${{ secrets.PROD_USER }}
           password: ${{ secrets.PROD_PASSWORD }}
           port: 22
-          envs: SPRING_DATASOURCE_URL,SPRING_DATASOURCE_USERNAME,SPRING_DATASOURCE_PASSWORD,SPRING_DATA_REDIS_HOST,SPRING_DATA_REDIS_PORT,SPRING_DATA_REDIS_DATABASE,APP_HMAC_SECRET,APP_IP_WHITELIST,GRPC_CLIENT_SCORE_SERVICE_ADDRESS
           script: |
             cd /root/kaoyan_rank_docker_cmd
-            cat > .env.backend <<EOF
-            SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
-            SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
-            SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
-            SPRING_DATA_REDIS_HOST=${SPRING_DATA_REDIS_HOST}
-            SPRING_DATA_REDIS_PORT=${SPRING_DATA_REDIS_PORT}
-            SPRING_DATA_REDIS_DATABASE=${SPRING_DATA_REDIS_DATABASE}
-            APP_HMAC_SECRET=${APP_HMAC_SECRET}
-            APP_IP_WHITELIST=${APP_IP_WHITELIST}
-            GRPC_CLIENT_SCORE_SERVICE_ADDRESS=${GRPC_CLIENT_SCORE_SERVICE_ADDRESS}
-            EOF
-            chmod 600 .env.backend
-            export SPRING_DATASOURCE_URL SPRING_DATASOURCE_USERNAME SPRING_DATASOURCE_PASSWORD
-            export SPRING_DATA_REDIS_HOST SPRING_DATA_REDIS_PORT SPRING_DATA_REDIS_DATABASE
-            export APP_HMAC_SECRET APP_IP_WHITELIST GRPC_CLIENT_SCORE_SERVICE_ADDRESS
             ./kaoyan-rank-frontend.sh
