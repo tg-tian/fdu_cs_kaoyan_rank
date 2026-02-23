@@ -79,7 +79,7 @@ public class UserServiceImpl implements UserService {
                     if (Boolean.FALSE.equals(redisUtil.setIfAbsent(k, "1", 24, TimeUnit.HOURS))) {
                         redisUtil.increment(k, 1);
                     }
-                    throw new ServiceException( "验证失败：考生信息不存在或不匹配");
+                    throw new ServiceException( "查询成绩失败" + response.getMessage());
                 }
                 user = buildNewUser(examNoHash, idCardHash);
                 UserServiceImpl proxy = applicationContext.getBean(UserServiceImpl.class);
