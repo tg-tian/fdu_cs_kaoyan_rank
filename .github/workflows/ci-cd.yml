@@ -90,7 +90,8 @@ jobs:
              SPRING_DATA_REDIS_PORT=${{ secrets.SPRING_DATA_REDIS_PORT }}
              SPRING_DATA_REDIS_USERNAME=${{ secrets.SPRING_DATA_REDIS_USERNAME }}
              SPRING_DATA_REDIS_PASSWORD=${{ secrets.SPRING_DATA_REDIS_PASSWORD }}
-            APP_HMAC_SECRET=${{ secrets.APP_HMAC_SECRET }}
+             APP_HMAC_SECRET=${{ secrets.APP_HMAC_SECRET }}
+             GRPC_CLIENT_SCORE_SERVICE_ADDRESS=${{ secrets.GRPC_CLIENT_SCORE_SERVICE_ADDRESS }}
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/kaoyan-rank-backend:latest
             ${{ secrets.DOCKER_USERNAME }}/kaoyan-rank-backend:${{ github.sha }}
