@@ -139,8 +139,8 @@ const handleLogin = async (formEl: FormInstance | undefined) => {
           idCard: loginForm.idNumber
         }, (update: LoginUpdate) => {
           console.log(update)
-          if (update.type === 'queue') {
-            statusMessage.value = `当前排队人数: ${update.data}`
+          if (update.type === 'info') {
+            statusMessage.value = `${update.data}`
           } else if (update.type === 'success') {
             statusMessage.value = '查询成绩成功，正在跳转...'
           } else if (update.type === 'error') {

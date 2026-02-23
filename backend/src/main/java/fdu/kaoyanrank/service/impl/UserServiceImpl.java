@@ -69,6 +69,7 @@ public class UserServiceImpl implements UserService {
                     throw new ServiceException("账号已被禁用");
                 }
             } else {
+                emitter.send(SseEmitter.event().name("info").data("校验完成，前往官网查询成绩"));
                 waitForRateLimit(emitter);
                 GetScoreResponse response = fetchScore(userDto);
                 log.info("远程查询成绩结果: {}", response.getMessage());
@@ -113,7 +114,7 @@ public class UserServiceImpl implements UserService {
             while (!rateLimiter.tryAcquire(1)) {
                 long queueCount = getQueueCount(queueKey);
                 log.info("当前排队人数: {}", queueCount);
-                emitter.send(SseEmitter.event().name("queue").data(queueCount));
+                emitter.send(SseEmitter.event().name("info").data("当前排队人数: " + queueCount));
                 try {
                     TimeUnit.SECONDS.sleep(1);
                 } catch (InterruptedException e) {
