@@ -50,15 +50,20 @@ export const loginAndGetToken = async (
             eventData = line.slice(5).trim()
           }
         }
-        onUpdate({ type: event, data: eventData })
-        if (event === 'success') {
-          return eventData
-        }
-        if (event === 'error') {
-          throw new Error(eventData)
+        if (event) {
+            onUpdate({ type: event, data: eventData })
+            if (event === 'success') {
+              return eventData
+            }
+            if (event === 'error') {
+              throw new Error(eventData)
+            }
         }
       }
     }
+  } catch (error: any) {
+    console.error('SSE Read Error:', error)
+    throw new Error(error.message || '连接异常中断')
   } finally {
     reader.cancel()
   }
