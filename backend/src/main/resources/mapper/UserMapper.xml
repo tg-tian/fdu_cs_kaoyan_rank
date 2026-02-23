@@ -16,7 +16,7 @@
         SELECT
         id, exam_no_hash, id_card_hash, role, status, created_at, updated_at
         FROM user
-        WHERE exam_no_hash = #{examNoHash} AND id_card_hash = #{idCardHash}
+        WHERE exam_no_hash = #{examNoHash} OR id_card_hash = #{idCardHash}
         LIMIT 1
     </select>
 
