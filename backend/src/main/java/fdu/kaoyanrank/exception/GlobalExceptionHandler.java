@@ -16,12 +16,6 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<Result<String>> handleNoResourceFoundException(NoResourceFoundException e) {
-        log.warn("资源未找到: {}", e.getResourcePath());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Result.error(404, "资源未找到"));
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Result<String>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         FieldError fieldError = e.getBindingResult().getFieldError();
