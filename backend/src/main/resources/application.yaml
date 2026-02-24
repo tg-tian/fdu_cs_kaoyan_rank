@@ -40,4 +40,4 @@ grpc:
       negotiation-type: plaintext
       default-load-balancing-policy: round_robin
       keep-alive-time: 30s
-      keep-alive-timeout: 10s
+      keep-alive-timeout: 30s
