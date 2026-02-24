@@ -21,6 +21,8 @@ public class SecretFilter implements Filter {
         String secret = httpRequest.getHeader("X-Internal-Secret");
         if (!"fdcsky".equals(secret)) {
             httpResponse.setStatus(HttpStatus.FORBIDDEN.value());
+            httpResponse.setContentType("application/json;charset=UTF-8");
+            httpResponse.getWriter().write("{\"code\": 403, \"msg\": \"Invalid Secret\"}");
             return;
         }
         chain.doFilter(request, response);
