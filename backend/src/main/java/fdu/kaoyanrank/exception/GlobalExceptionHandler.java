@@ -45,7 +45,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Result<String>> handleException(Exception e) {
-        log.error("系统异常", e);
+        if(!e instanceof NoResourceFoundException) {
+            log.error("系统异常", e);
+        }
+        
         return buildErrorResponse(500, "系统开小差了");
     }
 
