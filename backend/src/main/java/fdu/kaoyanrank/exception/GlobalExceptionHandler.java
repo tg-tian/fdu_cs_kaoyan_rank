@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Result<String>> handleException(Exception e) {
-        if(!e instanceof NoResourceFoundException) {
+        if(!(e instanceof NoResourceFoundException)) {
             log.error("系统异常", e);
         }
         
