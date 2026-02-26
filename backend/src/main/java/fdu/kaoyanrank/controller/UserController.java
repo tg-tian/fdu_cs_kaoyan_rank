@@ -20,7 +20,7 @@ public class UserController {
 
     @PostMapping("/login")
     public SseEmitter login(@Valid @RequestBody UserDto userDto) {
-        SseEmitter emitter = new SseEmitter(30000L);
+        SseEmitter emitter = new SseEmitter(300000L);
         String ip = IpInterceptor.getIp();
         userService.login(userDto, emitter, ip);
         return emitter;
