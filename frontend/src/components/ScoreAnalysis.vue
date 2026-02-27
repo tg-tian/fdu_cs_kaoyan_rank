@@ -8,8 +8,8 @@
           <span class="value">{{ myRank }} / {{ totalCount }}</span>
         </div>
         <div class="stat-row">
-          <span class="label">超过考生:</span>
-          <span class="value highlight">{{ percentile }}%</span>
+          <span class="label">排名前:</span>
+          <span class="value highlight">{{ topPercentile }}%</span>
         </div>
       </div>
     </div>
@@ -36,7 +36,7 @@ import { computed } from 'vue'
 import type { ScoreItem } from '../entities/score'
 
 // Helper interface for internal stats
-interface SubjectStat {
+export interface SubjectStat {
   subject: string
   myScore: number
   average: number
@@ -69,19 +69,21 @@ const totalCount = computed(() => props.allScores.length)
 
 const getTotal = (s: ScoreItem) => s.englishScore + s.politicsScore + s.mathScore + s.score408
 
-const myRank = computed(() => {
-  if (!props.myScore) return '-'
+const myRankValue = computed(() => {
+  if (!props.myScore) return null
   const myTotal = getTotal(props.myScore)
-  // Calculate rank: count how many people have higher score + 1
   const higherScores = props.allScores.filter(s => getTotal(s) > myTotal).length
   return higherScores + 1
 })
 
-const percentile = computed(() => {
-  if (!props.myScore || totalCount.value === 0) return 0
-  const myTotal = getTotal(props.myScore)
-  const lowerScores = props.allScores.filter(s => getTotal(s) < myTotal).length
-  return Math.round((lowerScores / totalCount.value) * 100)
+const myRank = computed(() => {
+  if (myRankValue.value === null) return '-'
+  return myRankValue.value
+})
+
+const topPercentile = computed(() => {
+  if (myRankValue.value === null || totalCount.value === 0) return 0
+  return Math.round((myRankValue.value / totalCount.value) * 100)
 })
 
 const statsData = computed<SubjectStat[]>(() => {
