@@ -23,45 +23,19 @@ class ScoreService(score_pb2_grpc.ScoreServiceServicer):
     def GetScore(self, request, context):
         exam_no = (request.examNo or "").strip()
         id_card = (request.idCard or "").strip()
-        # try:
-        #     total_score = fetch_scores(exam_no, id_card)
-        #     return score_pb2.GetScoreResponse(
-        #         success=True,
-        #         totalScore=total_score,
-        #         message="查询成功"
-        #     )
-        # except Exception as exc:
-        #     return score_pb2.GetScoreResponse(
-        #         success=False,
-        #         totalScore={},
-        #         message=str(exc)
-        #     )
-        time.sleep(3)
-
-
-        index_url = os.getenv("INDEX_HTTP", "https://gsas.fudan.edu.cn/sscjcx/index").strip()
-        login_base = os.getenv("LOGIN_HTTP", "https://gsas.fudan.edu.cn").strip()
-        year = os.getenv("FDU_YEAR", "2026")
-        captcha_url = os.getenv("CAPTCHA_HTTP", "https://gsas.fudan.edu.cn/captcha/imageCode").strip()
-        session = requests.Session()
-        headers = _build_headers()
-        index_res = session.get(index_url, headers=headers, timeout=10)
-        index_res.raise_for_status()
-        verify_code = _retry_verify_code(session, captcha_url, headers)
-        if len(verify_code) != 4:
-            raise RuntimeError("验证码识别失败")
-        
-        total_score = {
-            "math": random.randint(60, 150),
-            "english": random.randint(40, 100),
-            "politics": random.randint(40, 90),
-            "408": random.randint(40, 150)
-        }
-        return score_pb2.GetScoreResponse(
-            success=True,
-            totalScore=total_score,
-            message="查询成功"
-        )
+        try:
+            total_score = fetch_scores(exam_no, id_card)
+            return score_pb2.GetScoreResponse(
+                success=True,
+                totalScore=total_score,
+                message="查询成功"
+            )
+        except Exception as exc:
+            return score_pb2.GetScoreResponse(
+                success=False,
+                totalScore={},
+                message=str(exc)
+            )
 
 
 def serve():
@@ -92,7 +66,6 @@ def fetch_scores(exam_no, id_card):
     action = _extract_action(index_res.text)
     if not action:
         raise RuntimeError("未解析到登录action")
-    captcha_url = _extract_captcha_url(index_res.text, index_url)
     verify_code = _retry_verify_code(session, captcha_url, headers)
     if len(verify_code) != 4:
         raise RuntimeError("验证码识别失败")
@@ -104,11 +77,17 @@ def fetch_scores(exam_no, id_card):
         "validateCode": verify_code
     }
     login_url = urljoin(login_base, action)
-    login_res = session.post(login_url, data=form, headers=_build_login_headers(headers, login_base), timeout=10)
+    login_res = session.post(login_url, data=form, headers=_build_login_headers(), timeout=10)
     login_res.raise_for_status()
     error_info = _extract_error_info(login_res.text)
     if error_info:
-        raise RuntimeError(error_info)
+        if "验证码错误" in error_info:
+            raise RuntimeError("验证码错误")
+        if "未查询到相应的成绩" in error_info:
+            raise RuntimeError("未查询到相应的成绩，请检查输入信息!")
+        if "暂未到开放时间" in error_info:
+            raise RuntimeError("暂未到开放时间!")
+    
 
     total_score = _extract_scores(login_res.text)
     if not total_score:
@@ -124,10 +103,20 @@ def _build_headers():
     }
 
 
-def _build_login_headers(headers, referer):
-    merged = dict(headers)
-    merged["Referer"] = referer
-    return merged
+def _build_login_headers():
+    return {
+        "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Host": "gsas.fudan.edu.cn",
+        "Referer": "https://gsas.fudan.edu.cn/logon",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Origin": "https://gsas.fudan.edu.cn",
+        "Sec-Ch-Ua": '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Connection": "keep-alive",
+        "Cache-Control": "max-age=0"
+    }
 
 
 def _extract_action(html):
@@ -135,15 +124,6 @@ def _extract_action(html):
     if not match:
         return ""
     return match.group(1)
-
-
-def _extract_captcha_url(html, base_url):
-    match = re.search(r'<img[^>]+src=["\']([^"\']+)["\'][^>]*(captcha|verify|validate)[^>]*>', html, re.IGNORECASE)
-    if not match:
-        match = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', html, re.IGNORECASE)
-    if not match:
-        return ""
-    return urljoin(base_url, match.group(1))
 
 
 def _retry_verify_code(session, captcha_url, headers):
@@ -160,24 +140,51 @@ def _retry_verify_code(session, captcha_url, headers):
     return best_code
 
 def _extract_error_info(html):
-    if re.search(r'验证码.*(错误|无效)', html):
-        return "验证码错误"
-    if re.search(r'(密码|口令).*(错误|不正确)', html):
-        return "密码错误"
-    if re.search(r'(未开放|未到|开放时间)', html):
-        return "未到开放时间"
+    match = re.search(r'<div class="form-group" id="errorInfo"[^>]*>\s*(.*?)\s*</div>', html, re.DOTALL | re.IGNORECASE)
+    if match:
+        return match.group(1).strip()
     return ""
 
 
 def _extract_scores(html):
-    scores = {}
-    pairs = re.findall(r'<t[dh][^>]*>\s*([^<]+?)\s*</t[dh]>\s*<t[dh][^>]*>\s*([0-9]{1,3})\s*</t[dh]>', html, re.IGNORECASE)
-    for name, score in pairs:
-        name = re.sub(r'\s+', '', name)
-        score = int(score)
-        if name and score >= 0:
-            scores[name] = score
-    return scores
+    pattern = re.compile(
+        r"准考证号</td>\s*<td[^>]*>(\d+)</td>.*?"
+        r"姓名</td>\s*<td[^>]*>([^<]+)</td>.*?"
+        r"报考院系</td>.*?<td[^>]*>([^<]+)</td>.*?"
+        r"报考专业</td>.*?<td[^>]*>([^<]+)</td>.*?"
+        r"101 思想政治理论</td>\s*<td[^>]*>([^<]+)</td>.*?"
+        r"20.*? 英语.*?</td>\s*<td[^>]*>([^<]+)</td>.*?"
+        r"<td colspan=\"2\" style=\"border:1px solid black;text-align: center;\">(.*?)</td>.*?"
+        r"<td colspan=\"2\" style=\"border:1px solid black;text-align: center;\">(.*?)</td>.*?"
+        r"<td colspan=\"2\" style=\"border:1px solid black;text-align: center;\">(.*?)</td>.*?"
+        r"<td colspan=\"2\" style=\"border:1px solid black;text-align: center;\">(.*?)</td>.*?"
+        r"总分</td>\s*<td[^>]*>([^<]+)</td>.*?",
+        re.DOTALL | re.IGNORECASE
+    )
+
+    match = pattern.search(html)
+    if not match:
+        return {}
+
+    try:
+        # group 5: 政治
+        politics = int(match.group(5).strip())
+        # group 6: 英语
+        english = int(match.group(6).strip())
+        # group 8: 专业课1 (数学)
+        math_score = int(match.group(8).strip())
+        # group 10: 专业课2 (408)
+        cs_score = int(match.group(10).strip())
+
+        return {
+            "math": math_score,
+            "english": english,
+            "politics": politics,
+            "408": cs_score
+        }
+    except (ValueError, IndexError) as e:
+        logger.error(f"解析分数数值失败: {e}")
+        return {}
 
 
 if __name__ == '__main__':
