@@ -46,7 +46,7 @@
     <!-- Profile Specific Configuration -->
     <!-- Development Environment -->
     <springProfile name="dev">
-        <logger name="com.tg.blog" level="DEBUG" />
+        <logger name="fdu.kaoyanrank" level="INFO" />
         <root level="INFO">
             <appender-ref ref="CONSOLE" />
             <appender-ref ref="FILE" />
@@ -55,7 +55,7 @@
 
     <!-- Production Environment -->
     <springProfile name="prod">
-        <logger name="com.tg.blog" level="INFO" />
+        <logger name="fdu.kaoyanrank" level="INFO" />
         <root level="INFO">
             <appender-ref ref="FILE" />
         </root>

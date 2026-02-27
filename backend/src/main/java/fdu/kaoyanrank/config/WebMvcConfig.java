@@ -14,8 +14,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
+
+import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
 @Configuration
 @RequiredArgsConstructor
@@ -35,8 +37,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public ExecutorService virtualThreadTaskExecutor() {
-        return Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("vt-", 0).factory());
+    public AsyncTaskExecutor virtualThreadTaskExecutor() {
+        SimpleAsyncTaskExecutor executor = new SimpleAsyncTaskExecutor("vt-");
+        executor.setVirtualThreads(true);
+        executor.setConcurrencyLimit(20);
+        return executor;
     }
 
     @PostConstruct
