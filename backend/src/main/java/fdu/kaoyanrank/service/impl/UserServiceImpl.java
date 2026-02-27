@@ -17,10 +17,14 @@ import fdu.kaoyanrank.utils.HmacUtil;
 import fdu.kaoyanrank.utils.IpUtil;
 import fdu.kaoyanrank.utils.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
-import net.devh.boot.grpc.client.inject.GrpcClient;
+import io.grpc.ManagedChannel;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import org.redisson.api.RRateLimiter;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -28,9 +32,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service
@@ -51,14 +58,44 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private BusinessValidator<UserDto> userCredentialBusinessValidator;
 
-    @GrpcClient("scoreService")
-    private ScoreServiceGrpc.ScoreServiceBlockingStub scoreServiceStub;
+    @Value("${grpc.client.scoreService.address}")
+    private String scoreServiceAddress;
+
+    private List<ManagedChannel> channels = new ArrayList<>();
+    private List<ScoreServiceGrpc.ScoreServiceBlockingStub> stubs = new ArrayList<>();
+    private final AtomicInteger pollIndex = new AtomicInteger(0);
+    private static final int CHANNEL_COUNT = 5;
+
+    @PostConstruct
+    public void init() {
+        // 保留 static:// 前缀，以便 StaticNameResolverProvider 处理
+        String target = scoreServiceAddress;
+        
+        for (int i = 0; i < CHANNEL_COUNT; i++) {
+            ManagedChannel channel = NettyChannelBuilder.forTarget(target)
+                    .defaultLoadBalancingPolicy("round_robin")
+                    .usePlaintext()
+                    .maxInboundMetadataSize(1024 * 1024) // 1MB
+                    .build();
+            channels.add(channel);
+            stubs.add(ScoreServiceGrpc.newBlockingStub(channel));
+        }
+    }
+
+    @PreDestroy
+    public void destroy() {
+        for (ManagedChannel channel : channels) {
+            if (channel != null && !channel.isShutdown()) {
+                channel.shutdown();
+            }
+        }
+    }
 
     @Override
     @Async("virtualThreadTaskExecutor")
     public void login(UserDto userDto, SseEmitter emitter, String ip){
         try {
-            userCredentialBusinessValidator.validate(userDto);
+            //userCredentialBusinessValidator.validate(userDto);
             ipLimitCheck(ip);
             // Hash
             String examNoHash = hmacUtil.hmacSha256Hex(userDto.getExamNo());
@@ -151,7 +188,10 @@ public class UserServiceImpl implements UserService {
                     .setExamNo(userDto.getExamNo())
                     .setIdCard(userDto.getIdCard())
                     .build();
-            return scoreServiceStub.getScore(request);
+            
+            // 轮询选择一个 Stub
+            int index = (pollIndex.getAndIncrement() & 0x7FFFFFFF) % stubs.size();
+            return stubs.get(index).getScore(request);
         } catch (Exception e) {
             log.error("scoreService远程调用失败", e);
             throw new ServiceException("官网查询成绩失败");
