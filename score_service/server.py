@@ -167,6 +167,11 @@ def _extract_scores(html):
         return {}
 
     try:
+        # group 3: 报考院系
+        department = match.group(3).strip()
+        if "计算与智能创新学院" not in department :
+            raise RuntimeError(f"非目标院系考生: {department}")
+
         # group 5: 政治
         politics = int(match.group(5).strip())
         # group 6: 英语
