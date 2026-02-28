@@ -86,12 +86,13 @@
       </div>
       
       <HistoryScoreLines />
+      <div ref="giscusRef" class="giscus-container"></div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAllScores, getMyScore } from '../api/score'
 import type { ScoreItem } from '../entities/score'
@@ -104,6 +105,7 @@ const router = useRouter()
 const scores = ref<ScoreItem[]>([])
 const myScore = ref<ScoreItem | null>(null)
 const loading = ref(false)
+const giscusRef = ref<HTMLElement | null>(null)
 
 // Pagination and Sorting state
 const currentPage = ref(1)
@@ -193,6 +195,27 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+
+  await nextTick()
+  if (!giscusRef.value) return
+  if (giscusRef.value.querySelector('iframe')) return
+  const script = document.createElement('script')
+  script.src = 'https://giscus.app/client.js'
+  script.async = true
+  script.crossOrigin = 'anonymous'
+  script.setAttribute('data-repo', 'tg-tian/fdu_cs_kaoyan_rank')
+  script.setAttribute('data-repo-id', 'R_kgDORRUmzA')
+  script.setAttribute('data-category', 'General')
+  script.setAttribute('data-category-id', 'DIC_kwDORRUmzM4C3Zf7')
+  script.setAttribute('data-mapping', 'pathname')
+  script.setAttribute('data-strict', '1')
+  script.setAttribute('data-reactions-enabled', '1')
+  script.setAttribute('data-emit-metadata', '0')
+  script.setAttribute('data-input-position', 'top')
+  script.setAttribute('data-theme', 'preferred_color_scheme')
+  script.setAttribute('data-lang', 'en')
+  script.setAttribute('data-loading', 'lazy')
+  giscusRef.value.appendChild(script)
 })
 
 </script>
@@ -360,6 +383,10 @@ onMounted(async () => {
   margin-top: 20px;
   display: flex;
   justify-content: center;
+}
+
+.giscus-container {
+  margin-top: 24px;
 }
 
 .info-card {
