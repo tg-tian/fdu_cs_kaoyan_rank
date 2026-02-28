@@ -1,6 +1,8 @@
 package fdu.kaoyanrank.exception;
 
 import fdu.kaoyanrank.common.Result;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -38,8 +40,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ServiceException.class)
-    public ResponseEntity<Result<String>> handleServiceException(ServiceException e) {
+    public ResponseEntity<Result<String>> handleServiceException(ServiceException e, HttpServletResponse response) {
         log.error("Service错误",e);
+        String contentType = response.getContentType();
+        if ((contentType != null && contentType.contains("text/event-stream")) || response.isCommitted())
+            return null;
         return buildErrorResponse(e.getCode(), e.getMessage());
     }
 

@@ -95,16 +95,15 @@ public class UserServiceImpl implements UserService {
     @Async("virtualThreadTaskExecutor")
     public void login(UserDto userDto, SseEmitter emitter, String ip){
         try {
-            //userCredentialBusinessValidator.validate(userDto);
+            userCredentialBusinessValidator.validate(userDto);
             ipLimitCheck(ip);
             // Hash
             String examNoHash = hmacUtil.hmacSha256Hex(userDto.getExamNo());
             String idCardHash = hmacUtil.hmacSha256Hex(userDto.getIdCard());
             User user = userMapper.findByExamNoHashAndIdCardHash(examNoHash, idCardHash);
             if (user != null) {
-                if (UserConstants.DISABLED == user.getStatus()) {
+                if (UserConstants.DISABLED == user.getStatus())
                     throw new ServiceException("账号已被禁用");
-                }
             } else {
                 emitter.send(SseEmitter.event().name("info").data("校验完成，排队查询成绩"));
                 waitForRateLimit(emitter);
@@ -118,7 +117,7 @@ public class UserServiceImpl implements UserService {
                     if (Boolean.FALSE.equals(redisUtil.setIfAbsent(k, "1", 24, TimeUnit.HOURS))) {
                         redisUtil.increment(k, 1);
                     }
-                    throw new ServiceException( "查询成绩失败" + response.getMessage());
+                    throw new ServiceException( "查询成绩失败," + response.getMessage());
                 }
                 user = buildNewUser(examNoHash, idCardHash);
                 UserServiceImpl proxy = applicationContext.getBean(UserServiceImpl.class);
