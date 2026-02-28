@@ -13,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import java.io.IOException;
 
 @Slf4j
 @RestControllerAdvice
@@ -43,8 +44,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Result<String>> handleServiceException(ServiceException e, HttpServletResponse response) {
         log.error("Service错误",e);
         String contentType = response.getContentType();
-        if ((contentType != null && contentType.contains("text/event-stream")) || response.isCommitted())
+        if ((contentType != null && contentType.contains("text/event-stream")) || response.isCommitted()){
+            try {
+                response.getWriter().write("event:error\n");
+                response.getWriter().write("data:" + e.getMessage() + "\n\n");
+                response.getWriter().flush();
+            } catch (IOException ex) {
+                log.error("写出SSE错误信息失败", ex);
+            }
             return null;
+        }
+
         return buildErrorResponse(e.getCode(), e.getMessage());
     }
 
