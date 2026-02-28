@@ -31,8 +31,8 @@ const initChart = () => {
   
   // Create bins of size 10
   const binSize = 10
-  const maxScore = 500
-  const minScore = 0
+  const minScore = 280
+  const maxScore = 450
   const bins: number[] = []
   const binCounts: number[] = []
   
@@ -43,6 +43,7 @@ const initChart = () => {
   
   // Fill bins
   scores.forEach(score => {
+    if (score < minScore || score > maxScore) return
     const binIndex = Math.floor((score - minScore) / binSize)
     if (binIndex >= 0 && binIndex < bins.length) {
       binCounts[binIndex] = (binCounts[binIndex] ?? 0) + 1
@@ -66,7 +67,7 @@ const initChart = () => {
   
   // Find which bin my score is in
   let myBinIndex = -1
-  if (myTotal !== null) {
+  if (myTotal !== null && myTotal >= minScore && myTotal <= maxScore) {
     const rawBinIndex = Math.floor((myTotal - minScore) / binSize)
     myBinIndex = rawBinIndex - startIndex
   }
