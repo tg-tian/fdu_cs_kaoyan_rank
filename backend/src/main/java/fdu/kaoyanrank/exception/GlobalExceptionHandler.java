@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @RestControllerAdvice
@@ -46,9 +47,11 @@ public class GlobalExceptionHandler {
         String contentType = response.getContentType();
         if ((contentType != null && contentType.contains("text/event-stream")) || response.isCommitted()){
             try {
-                response.getWriter().write("event:error\n");
-                response.getWriter().write("data:" + e.getMessage() + "\n\n");
-                response.getWriter().flush();
+                // 关键：改用 getOutputStream() 代替 getWriter()
+                String sseData = "event:error\ndata:" + e.getMessage() + "\n\n";
+                byte[] bytes = sseData.getBytes(StandardCharsets.UTF_8);
+                response.getOutputStream().write(bytes);
+                response.getOutputStream().flush();
             } catch (IOException ex) {
                 log.error("写出SSE错误信息失败", ex);
             }
