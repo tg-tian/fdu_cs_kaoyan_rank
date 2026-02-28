@@ -1,6 +1,24 @@
 <template>
   <div class="home-container">
     <div class="home-content">
+      <el-dialog
+        v-model="showCommentNotice"
+        width="520px"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+        align-center
+      >
+        <template #header>
+          <div class="notice-title">提示</div>
+        </template>
+        <div class="comment-notice">
+          <p>页面底部有评论区和公告。</p>
+          <p>由于使用 GitHub 服务，加载可能会有一定延迟。</p>
+        </div>
+        <template #footer>
+          <el-button type="primary" @click="handleCommentNoticeClose">知道了</el-button>
+        </template>
+      </el-dialog>
       <h1 class="title">复旦CS考研录分网站</h1>
       <div class="notice-card">
         <p class="notice-title">复试说明：</p>
@@ -106,6 +124,8 @@ const scores = ref<ScoreItem[]>([])
 const myScore = ref<ScoreItem | null>(null)
 const loading = ref(false)
 const giscusRef = ref<HTMLElement | null>(null)
+const showCommentNotice = ref(false)
+const commentNoticeStorageKey = 'home-comment-notice-shown'
 
 // Pagination and Sorting state
 const currentPage = ref(1)
@@ -173,7 +193,15 @@ const totalScore = computed(() => {
   )
 })
 
+const handleCommentNoticeClose = () => {
+  showCommentNotice.value = false
+  localStorage.setItem(commentNoticeStorageKey, '1')
+}
+
 onMounted(async () => {
+  if (!localStorage.getItem(commentNoticeStorageKey)) {
+    showCommentNotice.value = true
+  }
   const token = localStorage.getItem('token')
   if (!token) {
     ElMessage.warning('请先登录')
@@ -387,6 +415,11 @@ onMounted(async () => {
 
 .giscus-container {
   margin-top: 24px;
+}
+
+.comment-notice {
+  line-height: 1.7;
+  color: #606266;
 }
 
 .info-card {
