@@ -16,9 +16,6 @@ export const getToken = () => {
 }
 
 export const resolveResult = <T>(response: AxiosResponse<Result<T>>): T => {
-  if (response.status === 401) {
-    throw new Error('登录过期')
-  }
   const result = response.data
   if (result.code === 200) {
     if (result.data !== undefined && result.data !== null) 
