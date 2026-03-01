@@ -61,6 +61,7 @@
         :all-scores="scores" 
         :my-score="myScore || undefined" 
       />
+      <HourlyScoreChart :create-times="userCreateTimes" />
 
       <div class="score-list-card">
         <h2 class="card-title">
@@ -113,11 +114,14 @@
 import { onMounted, ref, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAllScores, getMyScore } from '../api/score'
+import { getUserCreateTimes } from '../api/user'
+import type { UserCreateTime } from '../api/user'
 import type { ScoreItem } from '../entities/score'
 import { ElMessage } from 'element-plus'
 import ScoreHistogram from '../components/ScoreHistogram.vue'
 import ScoreAnalysis from '../components/ScoreAnalysis.vue'
 import HistoryScoreLines from '../components/HistoryScoreLines.vue'
+import HourlyScoreChart from '../components/HourlyScoreChart.vue'
 
 const router = useRouter()
 const scores = ref<ScoreItem[]>([])
@@ -126,6 +130,7 @@ const loading = ref(false)
 const giscusRef = ref<HTMLElement | null>(null)
 const showCommentNotice = ref(false)
 const commentNoticeStorageKey = 'home-comment-notice-shown'
+const userCreateTimes = ref<UserCreateTime[]>([])
 
 // Pagination and Sorting state
 const currentPage = ref(1)
@@ -211,12 +216,14 @@ onMounted(async () => {
 
   loading.value = true
   try {
-    const [allScores, me] = await Promise.all([
+    const [allScores, me, createTimes] = await Promise.all([
       getAllScores(),
-      getMyScore()
+      getMyScore(),
+      getUserCreateTimes()
     ])
     scores.value = allScores
     myScore.value = me
+    userCreateTimes.value = createTimes
     console.log('Data loaded:', { allScores, me })
   } catch (error: any) {
     if (error?.message.includes('401')) {
@@ -304,15 +311,6 @@ onMounted(async () => {
 }
 
 .score-card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid #ebeef5;
-}
-
-.chart-card {
   background: #fff;
   border-radius: 12px;
   padding: 24px;

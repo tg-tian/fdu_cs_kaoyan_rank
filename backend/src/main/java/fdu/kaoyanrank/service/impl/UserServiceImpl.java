@@ -36,8 +36,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -60,6 +60,11 @@ public class UserServiceImpl implements UserService {
 
     @Value("${grpc.client.scoreService.address}")
     private String scoreServiceAddress;
+
+    @Override
+    public List<User> getAllUserCreateTimes() {
+        return userMapper.findAllIdAndCreatedAt();
+    }
 
     private List<ManagedChannel> channels = new ArrayList<>();
     private List<ScoreServiceGrpc.ScoreServiceBlockingStub> stubs = new ArrayList<>();

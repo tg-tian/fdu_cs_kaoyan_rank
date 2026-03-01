@@ -33,7 +33,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/user/login");
 
         registry.addInterceptor(loginInterceptor)
-                .addPathPatterns("/score/**");
+                .addPathPatterns("/score/**")
+                .addPathPatterns("/user/createtime");
     }
 
     @Bean

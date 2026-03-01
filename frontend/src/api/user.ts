@@ -1,8 +1,15 @@
 import type { LoginParams } from '../entities/login'
+import { apiClient, getToken, resolveResult } from './index'
+import type { Result } from './index'
 
 export interface LoginUpdate {
   type: string;
   data?: any;
+}
+
+export interface UserCreateTime {
+  id: number | string
+  createdAt: string
 }
 
 export const loginAndGetToken = async (
@@ -69,4 +76,12 @@ export const loginAndGetToken = async (
   }
 
   throw new Error('连接断开，未收到登录令牌')
+}
+
+export const getUserCreateTimes = async (): Promise<UserCreateTime[]> => {
+  const token = getToken()
+  const response = await apiClient.get<Result<UserCreateTime[]>>('/api/user/createtime', {
+    headers: { token }
+  })
+  return resolveResult<UserCreateTime[]>(response)
 }
