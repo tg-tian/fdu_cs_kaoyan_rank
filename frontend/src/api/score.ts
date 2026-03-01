@@ -8,7 +8,7 @@ export const getAllScores = async (): Promise<ScoreItem[]> => {
   const response = await apiClient.get<Result<ScoreItem[]>>('/api/score/all', {
     headers: { token }
   })
-  return resolveResult<ScoreItem[]>(response.data)
+  return resolveResult<ScoreItem[]>(response)
 }
 
 export const getMyScore = async (): Promise<ScoreItem> => {
@@ -16,5 +16,5 @@ export const getMyScore = async (): Promise<ScoreItem> => {
   const response = await apiClient.get<Result<ScoreItem>>('/api/score/me', {
     headers: { token }
   })
-  return resolveResult<ScoreItem>(response.data)
+  return resolveResult<ScoreItem>(response)
 }

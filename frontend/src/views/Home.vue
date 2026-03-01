@@ -219,6 +219,11 @@ onMounted(async () => {
     myScore.value = me
     console.log('Data loaded:', { allScores, me })
   } catch (error: any) {
+    if (error?.message === '登录过期') {
+      ElMessage.warning('登录过期，请重新登录')
+      router.push('/login')
+      return
+    }
     ElMessage.error(error.message || '获取数据失败')
   } finally {
     loading.value = false
