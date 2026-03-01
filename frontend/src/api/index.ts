@@ -1,4 +1,5 @@
 import axios from 'axios'
+import type { AxiosResponse } from 'axios'
 
 export const apiClient = axios.create()
 
@@ -14,7 +15,11 @@ export const getToken = () => {
   return token
 }
 
-export const resolveResult = <T>(result: Result<T>): T => {
+export const resolveResult = <T>(response: AxiosResponse<Result<T>>): T => {
+  if (response.status === 401) {
+    throw new Error('登录过期')
+  }
+  const result = response.data
   if (result.code === 200) {
     if (result.data !== undefined && result.data !== null) 
       return result.data
